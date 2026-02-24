@@ -8,7 +8,6 @@ import chatRoute from "./routes/chatRoute.js";
 import statusRoute from "./routes/statusRoute.js";
 import initializeSocket from "./services/socketService.js";
 import http from "http";
-import path from "path";
 
 dotenv.config();
 
@@ -18,8 +17,6 @@ const server = http.createServer(app);
 // ✅ IMPORTANT: Use Render's PORT
 const PORT = process.env.PORT || 8000;
 
-// ✅ Fix __dirname for ES Modules
-const __dirname = path.resolve();
 
 // ✅ Required for Render proxy
 app.set("trust proxy", 1);
@@ -50,15 +47,9 @@ app.use("/api/auth", router);
 app.use("/api/chat", chatRoute);
 app.use("/api/status", statusRoute);
 
-// ================= PRODUCTION FRONTEND =================
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
-  // ✅ EXPRESS 5 SAFE CATCH-ALL (NO MORE '*')
-  app.use((req, res) => {
-    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
-  });
-} else {
+// ====== DEVELOPMENT MODE ROOT ROUTE ======
+if (process.env.NODE_ENV !== "production") {
   app.get("/", (req, res) => {
     res.send("🚀 API running in development mode");
   });
