@@ -1,0 +1,44 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@tailwindcss/vite": "^4.1.14",
+    "axios": "^1.13.2",
+    "date-fns": "^4.1.0",
+    "emoji-picker-react": "^4.16.1",
+    "framer-motion": "^12.23.26",
+    "heic2any": "^0.0.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-hook-form": "^7.68.0",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.10.1",
+    "react-toastify": "^11.0.5",
+    "socket.io-client": "^4.8.3",
+    "tailwindcss": "^4.1.14",
+    "whatsapp-clone": "file:..",
+    "yup": "^1.7.1",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "daisyui": "^5.5.14",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "vite": "^7.1.7"
+  }
+}

@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@plugin "daisyui";
+
+
+/* These properties are used to hide the ScrollBar & ensure smooth scrolling in 'ChatList' & 'ChatWindow' */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
