@@ -1,5 +1,5 @@
 import express from 'express'
-import connectDB from './config/connectDB.js'
+import ConnectDB from './config/ConnectDB.js'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import dotenv from 'dotenv'
@@ -76,7 +76,7 @@ if (process.env.NODE_ENV === "production") {
 
 
 //* ===== Connect DB & Start Server =====>
-connectDB()
+ConnectDB()
     .then(() => {
         server.listen(port, () => {
             console.log(`✅ Server started at --> http://localhost:${port}`)
