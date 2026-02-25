@@ -14,29 +14,29 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// ✅ IMPORTANT: Use Render's PORT
+// ✅ Use Render's PORT
 const PORT = process.env.PORT || 8000;
-
 
 // ✅ Required for Render proxy
 app.set("trust proxy", 1);
 
 // ================= CORS =================
+// Use a professional environment-variable whitelist
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [];
+
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (Postman, curl)
+      // allow Postman / curl / server-to-server requests with no origin
       if (!origin) return callback(null, true);
-      // allow the live frontend URL only
-      if (origin === process.env.FRONTEND_URL) {
-        return callback(null, true);
-      }
-      // reject any other origin
+
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+
       return callback(new Error(`CORS blocked for origin ${origin}`), false);
     },
     credentials: true,
   })
-)
+);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -55,7 +55,6 @@ app.use((req, res, next) => {
 app.use("/api/auth", router);
 app.use("/api/chat", chatRoute);
 app.use("/api/status", statusRoute);
-
 
 // ====== DEVELOPMENT MODE ROOT ROUTE ======
 if (process.env.NODE_ENV !== "production") {
