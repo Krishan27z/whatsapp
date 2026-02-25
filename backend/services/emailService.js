@@ -10,31 +10,37 @@ dotenv.config()
     Once it’s configured, you can reuse it anywhere to send emails easily.
 */
 const transporter = nodemailer.createTransport({
-    service: "gmail",  //& You can use any email provider (e.g., Outlook, Yahoo, custom SMTP)
-    auth: {
-        user: process.env.EMAIL_USER,  //& Your sender email address (stored securely in .env)
-        pass: process.env.EMAIL_PASS,  //& Your email password or app-specific password
-    }
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  service: "gmail",  //& You can use any email provider (e.g., Outlook, Yahoo, custom SMTP)
+  auth: {
+    user: process.env.EMAIL_USER,  //& Your sender email address (stored securely in .env)
+    pass: process.env.EMAIL_PASS,  //& Your email password or app-specific password
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
 })
 
 
 //* STEP-2: VERIFY THE CONNECTION CONFIGURATION
 //~ This ensures that the transporter is correctly configured and can connect to the Gmail service
 transporter.verify((error, success) => {
-    if (error) {
-        console.error("❌ Gmail Services Connection Failed:", error)
-    }
-    else {
-        console.log("✅ Gmail Services Connected Successfully")
-    }
+  if (error) {
+    console.error("❌ Gmail Services Connection Failed:", error)
+  }
+  else {
+    console.log("✅ Gmail Services Connected Successfully")
+  }
 })
 
 
 //* STEP-3: FUNCTION TO SEND OTP EMAIL TO USER
 const sendOtpToEmail = async (email, otp) => {
-    try {
-        //^ Define the email content using HTML for better presentation
-         const htmlContent = `
+  try {
+    //^ Define the email content using HTML for better presentation
+    const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -110,23 +116,23 @@ const sendOtpToEmail = async (email, otp) => {
 </html>
 `
 
-        //^ Define the email options — who sends, who receives, and what content
-        const mailOptions = {
-            from: process.env.EMAIL_USER,             //& Sender's email address
-            to: email,                                //& Recipient's email address
-            subject: "Your WhatsApp Verification OTP Code",  //& Subject of the email
-            html: htmlContent,                        //& Email body (formatted HTML)
-        }
-
-        //^ Send the email using the configured transporter to the recipient email address 
-        const info = await transporter.sendMail(mailOptions)
-
-        console.log("✅ OTP Email Sent Successfully:", info.messageId) //& Logs the message ID for debugging or tracking
-        return info //& Returns the response object if needed
-    } catch (error) {
-        console.error("❌ Error Sending OTP Email:", error.message) //& Logs any error that occurs while sending the email
-        throw new Error("Failed to send OTP email. Please try again.") //& Throws an error to be handled by the controller
+    //^ Define the email options — who sends, who receives, and what content
+    const mailOptions = {
+      from: process.env.EMAIL_USER,             //& Sender's email address
+      to: email,                                //& Recipient's email address
+      subject: "Your WhatsApp Verification OTP Code",  //& Subject of the email
+      html: htmlContent,                        //& Email body (formatted HTML)
     }
+
+    //^ Send the email using the configured transporter to the recipient email address 
+    const info = await transporter.sendMail(mailOptions)
+
+    console.log("✅ OTP Email Sent Successfully:", info.messageId) //& Logs the message ID for debugging or tracking
+    return info //& Returns the response object if needed
+  } catch (error) {
+    console.error("❌ Error Sending OTP Email:", error.message) //& Logs any error that occurs while sending the email
+    throw new Error("Failed to send OTP email. Please try again.") //& Throws an error to be handled by the controller
+  }
 }
 
 //* STEP-4: EXPORT THE FUNCTION FOR USE IN CONTROLLERS
