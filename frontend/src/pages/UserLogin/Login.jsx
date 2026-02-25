@@ -790,7 +790,7 @@ function Login() {
                                             exit={{ opacity: 0, y: -8 }}
                                             transition={{ duration: 0.3, ease: "easeInOut" }}
                                             className={`absolute z-30 sm:w-72 w-[16rem] top-full mt-1 -translate-y-24 max-h-64 overflow-y-auto
-                                            ${theme === 'dark' ? "bg-gray-700 border-gray-600" : "bg-white border-gray-300"} border rounded-md shadow-2xl`}
+                                            ${theme === 'dark' ? "bg-gray-700 border-gray-600" : "bg-white border-gray-300 text-gray-800"} border rounded-md shadow-2xl`}
                                         >
                                             {/*//^ ----- Search input container ----- */}
                                             <div className={`sticky top-0 bg-inherit z-10 p-2
