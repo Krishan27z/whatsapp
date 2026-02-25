@@ -24,10 +24,19 @@ app.set("trust proxy", 1);
 // ================= CORS =================
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: function (origin, callback) {
+      // allow requests with no origin (Postman, curl)
+      if (!origin) return callback(null, true);
+      // allow the live frontend URL only
+      if (origin === process.env.FRONTEND_URL) {
+        return callback(null, true);
+      }
+      // reject any other origin
+      return callback(new Error(`CORS blocked for origin ${origin}`), false);
+    },
     credentials: true,
   })
-);
+)
 
 app.use(express.json());
 app.use(cookieParser());
