@@ -13,7 +13,6 @@ const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
-  service: "gmail",  //& You can use any email provider (e.g., Outlook, Yahoo, custom SMTP)
   auth: {
     user: process.env.EMAIL_USER,  //& Your sender email address (stored securely in .env)
     pass: process.env.EMAIL_PASS,  //& Your email password or app-specific password
