@@ -3,9 +3,7 @@
 import { v2 as cloudinary } from "cloudinary"
 import multer from "multer"
 import fs from "fs"
-import { v4 as uuidv4 } from "uuid"
 import dotenv from "dotenv"
-import sharp from "sharp"
 
 dotenv.config()
 
@@ -24,21 +22,21 @@ const uploadFileToCloudinary = async (file, options = {}) => {
     let originalFileName = file.originalname
 
     // HEIC/HEIF conversion
-    if (originalFileName.toLowerCase().endsWith('.heic') ||
-        originalFileName.toLowerCase().endsWith('.heif') ||
-        originalMimeType === 'image/heic' ||
-        originalMimeType === 'image/heif') {
-        try {
-            const newFilePath = `${file.path}.jpg`
-            await sharp(file.path).jpeg({ quality: 90 }).toFile(newFilePath)
-            fs.unlinkSync(file.path)
-            filePath = newFilePath
-            originalMimeType = 'image/jpeg'
-            originalFileName = originalFileName.replace(/\.(heic|heif)$/i, '.jpg')
-        } catch (error) {
-            throw new Error("Failed to convert HEIC image. Please convert to JPEG or PNG first.")
-        }
-    }
+    // if (originalFileName.toLowerCase().endsWith('.heic') ||
+    //     originalFileName.toLowerCase().endsWith('.heif') ||
+    //     originalMimeType === 'image/heic' ||
+    //     originalMimeType === 'image/heif') {
+    //     try {
+    //         const newFilePath = `${file.path}.jpg`
+    //         await sharp(file.path).jpeg({ quality: 90 }).toFile(newFilePath)
+    //         fs.unlinkSync(file.path)
+    //         filePath = newFilePath
+    //         originalMimeType = 'image/jpeg'
+    //         originalFileName = originalFileName.replace(/\.(heic|heif)$/i, '.jpg')
+    //     } catch (error) {
+    //         throw new Error("Failed to convert HEIC image. Please convert to JPEG or PNG first.")
+    //     }
+    // }
 
     // Determine resource type
     let resource_type = 'auto'
