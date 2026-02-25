@@ -22,7 +22,7 @@ app.set("trust proxy", 1);
 
 // ================= CORS =================
 // Use a professional environment-variable whitelist
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [];
+const allowedOrigins = [process.env.FRONTEND_URL]
 
 app.use(
   cors({
