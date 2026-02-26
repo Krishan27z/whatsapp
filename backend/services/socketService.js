@@ -233,17 +233,31 @@ const initializeSocket = (server) => {
         // 🔴 GET IMMEDIATE USER STATUS
         socket.on("get_immediate_status", async (requestedUserId, callback) => {
             try {
-                const hasActiveConnection = userConnections.has(requestedUserId) &&
-                    userConnections.get(requestedUserId).size > 0
+                //! Handle cases where requestedUserId might be an object containing userId or just a string
+                const userId = typeof requestedUserId === 'object' && requestedUserId !== null
+                    ? requestedUserId.userId || requestedUserId.id
+                    : requestedUserId;
 
-                let user = await User.findById(requestedUserId).select("username profilePicture lastSeen isOnline")
+                if (!userId) {
+                    return callback && callback({
+                        userId: requestedUserId,
+                        isOnline: false,
+                        lastSeen: null,
+                        error: "Invalid userId"
+                    });
+                }
+
+                const hasActiveConnection = userConnections.has(userId) &&
+                    userConnections.get(userId).size > 0
+
+                let user = await User.findById(userId).select("username profilePicture lastSeen isOnline")
 
                 const response = {
-                    userId: requestedUserId,
+                    userId: userId,
                     isOnline: hasActiveConnection,
                     lastSeen: user?.lastSeen || new Date(),
                     hasActiveConnection: hasActiveConnection,
-                    connectionCount: hasActiveConnection ? userConnections.get(requestedUserId).size : 0,
+                    connectionCount: hasActiveConnection ? userConnections.get(userId).size : 0,
                     timestamp: Date.now(),
                     immediate: true
                 }
@@ -263,18 +277,29 @@ const initializeSocket = (server) => {
         // 🔴 GET USER STATUS (for chat window)
         socket.on("get_user_status", async (requestedUserId, callback) => {
             try {
-                const hasActiveConnection = userConnections.has(requestedUserId) &&
-                    userConnections.get(requestedUserId).size > 0
+                const userId = typeof requestedUserId === 'object' && requestedUserId !== null
+                    ? requestedUserId.userId || requestedUserId.id
+                    : requestedUserId;
 
-                let user = await User.findById(requestedUserId).select("username profilePicture lastSeen isOnline")
+                if (!userId) {
+                    return callback && callback({
+                        userId: requestedUserId,
+                        isOnline: false,
+                        lastSeen: null
+                    });
+                }
+                const hasActiveConnection = userConnections.has(userId) &&
+                    userConnections.get(userId).size > 0
+
+                let user = await User.findById(userId).select("username profilePicture lastSeen isOnline")
 
                 const responseData = {
-                    userId: requestedUserId,
+                    userId: userId,
                     isOnline: hasActiveConnection,
                     lastSeen: user?.lastSeen || null,
                     profilePicture: user?.profilePicture || null,
                     username: user?.username || null,
-                    connectionCount: hasActiveConnection ? userConnections.get(requestedUserId)?.size || 0 : 0,
+                    connectionCount: hasActiveConnection ? userConnections.get(userId)?.size || 0 : 0,
                     timestamp: Date.now(),
                     immediate: true
                 }
