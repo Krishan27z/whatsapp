@@ -11,8 +11,7 @@ let reconnectTimer = null
 let browserId = null
 let connectionPromise = null
 
-
-//& 🔴 BROWSER ID
+// 🔴 BROWSER ID
 const getBrowserId = () => {
   if (!browserId) {
     browserId = localStorage.getItem('browserId') || `browser_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -21,7 +20,7 @@ const getBrowserId = () => {
   return browserId
 }
 
-//& 🔴 HEARTBEAT FUNCTION
+// 🔴 HEARTBEAT FUNCTION
 const startHeartbeat = () => {
   if (heartbeatInterval) {
     clearInterval(heartbeatInterval)
@@ -29,7 +28,7 @@ const startHeartbeat = () => {
 
   heartbeatInterval = setInterval(() => {
     if (socket?.connected) {
-      const userId = useUserStore.getState().user?._id
+      const userId = useUserStore.getState()._id
       socket.emit("heartbeat", {
         timestamp: Date.now(),
         userId: userId,
@@ -48,7 +47,7 @@ const startHeartbeat = () => {
   }, 2000)
 }
 
-//& 🔴 SOCKET INITIALIZATION - returns a promise that resolves when connected
+// 🔴 SOCKET INITIALIZATION - returns a promise that resolves when connected
 export const initializeSocket = () => {
   // Return existing promise if already connecting
   if (connectionPromise) {
@@ -59,11 +58,7 @@ export const initializeSocket = () => {
     try {
       console.log("🔌 initializeSocket function called")
 
-      const token = localStorage.getItem("auth_token") //^ We store the JWT token in localStorage after login/signup, 
-                                    //^ and use it to authenticate the socket connection. 
-                                    //^ The backend socketMiddleware will verify this token to authenticate the user for real-time features.
-
-      //& Cleanup old socket
+      // Cleanup old socket
       if (socket) {
         if (socket.connected) {
           socket.disconnect()
@@ -71,7 +66,7 @@ export const initializeSocket = () => {
         socket = null
       }
 
-      //& Cleanup intervals
+      // Cleanup intervals
       if (heartbeatInterval) {
         clearInterval(heartbeatInterval)
         heartbeatInterval = null
@@ -106,8 +101,7 @@ export const initializeSocket = () => {
 
       // 🔴 CRITICAL: Create socket instance
       const newSocket = io(BACKEND_URL, {
-        auth: {token: token},
-        // withCredentials: true,
+        withCredentials: true,
         transports: ["websocket", "polling"],
         reconnectionAttempts: MAX_RECONNECTION_ATTEMPTS,
         reconnectionDelay: 1000,
@@ -118,6 +112,9 @@ export const initializeSocket = () => {
         query: {
           userId: userId,
           browserId: browserId
+        },
+        auth: {
+          token: localStorage.getItem('token')
         },
         pingTimeout: 60000,
         pingInterval: 25000,
@@ -218,7 +215,7 @@ export const initializeSocket = () => {
         console.log("🔄 Socket Reconnected after", attemptNumber, "attempts")
 
         // 🔴 RE-EMIT USER CONNECTED
-        const currentUserId = useUserStore.getState().user?._id || userId
+        const currentUserId = useUserStore.getState()._id || userId
         setTimeout(() => {
           console.log("📡 Re-emitting user_connected after reconnect:", currentUserId)
           newSocket.emit("user_connected", {
@@ -385,7 +382,7 @@ export const disconnectSocket = () => {
       }
 
       socket.emit("user_logout", {
-        userId: useUserStore.getState().user?._id,
+        userId: useUserStore.getState()._id,
         timestamp: Date.now()
       })
 
@@ -455,7 +452,7 @@ export const emitSocketEvent = async (event, data) => {
 // 🔴 SPECIFIC EVENT EMITTERS - using emitSocketEvent
 export const emitTypingStart = async (conversationId, receiverId) => {
   try {
-    const currentUser = useUserStore.getState().user
+    const currentUser = useUserStore.getState()
     if (currentUser?._id && conversationId && receiverId) {
       return await emitSocketEvent("typing_start", {
         conversationId,
@@ -472,7 +469,7 @@ export const emitTypingStart = async (conversationId, receiverId) => {
 
 export const emitTypingStop = async (conversationId, receiverId) => {
   try {
-    const currentUser = useUserStore.getState().user
+    const currentUser = useUserStore.getState()
     if (currentUser?._id && conversationId && receiverId) {
       return await emitSocketEvent("typing_stop", {
         conversationId,
@@ -489,7 +486,7 @@ export const emitTypingStop = async (conversationId, receiverId) => {
 
 export const emitMessageRead = async (messageIds, senderId, conversationId) => {
   try {
-    const currentUser = useUserStore.getState().user
+    const currentUser = useUserStore.getState()
     if (currentUser?._id) {
       console.log("📤 Emitting message_read:", { messageIds, senderId, conversationId })
       return await emitSocketEvent("message_read", {
@@ -553,7 +550,7 @@ export const leaveConversationRoom = async (conversationId) => {
 // 🔴 CHAT WINDOW MANAGEMENT
 export const emitEnterChatWindow = async (conversationId) => {
   try {
-    const currentUser = useUserStore.getState().user
+    const currentUser = useUserStore.getState()
     const currentSocket = await waitForSocketConnection()
 
     if (currentSocket?.connected && conversationId && currentUser?._id) {
@@ -573,7 +570,7 @@ export const emitEnterChatWindow = async (conversationId) => {
 
 export const emitLeaveChatWindow = async (conversationId) => {
   try {
-    const currentUser = useUserStore.getState().user
+    const currentUser = useUserStore.getState()
     const currentSocket = await waitForSocketConnection()
 
     if (currentSocket?.connected && conversationId && currentUser?._id) {
@@ -594,7 +591,7 @@ export const emitLeaveChatWindow = async (conversationId) => {
 // 🔴 MESSAGE DELETION
 export const emitMessageDeleted = async (messageId, conversationId, deleteForEveryone) => {
     try {
-        const currentUser = useUserStore.getState().user
+        const currentUser = useUserStore.getState()
         const currentSocket = await waitForSocketConnection()
 
         if (currentSocket?.connected) {
@@ -632,7 +629,7 @@ export const emitGetOnlineUsers = async (callback) => {
 // 🔴 CHECK CHAT WINDOW
 export const emitCheckChatWindow = async (conversationId, callback) => {
   try {
-    const currentUser = useUserStore.getState().user
+    const currentUser = useUserStore.getState()
     const currentSocket = await waitForSocketConnection()
 
     if (currentSocket?.connected && conversationId && currentUser?._id) {
