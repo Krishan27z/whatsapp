@@ -4,7 +4,7 @@ import Message from "../models/Message.js"
 import Conversation from "../models/Conversation.js"
 import mongoose from "mongoose"
 import handleVideoCallEvent from "./videoCallEvents.js"
-import socketMiddleware from "../middlewares/authMiddleware.js"
+import socketMiddleware from "../middlewares/socketMiddleware.js"
 
 
 // 🔴 REAL-TIME STATUS STORAGE
