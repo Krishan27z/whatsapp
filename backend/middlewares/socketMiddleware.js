@@ -1,21 +1,14 @@
 import jwt from 'jsonwebtoken'
 import response from '../utils/responseHandler.js'
 
-const authMiddleware = (req, res, next) => {
+const socketMiddleware = (socket, next) => {
 
-    // const authToken = req.cookies?.auth_token;
+    const token = socket.handshake.auth?.token || socket.handshake.headers["authorization"]?.split(" ")[1]
 
-    // if (!authToken) {
-    //     return response(res, 401, false, "Authorization token missing");
-    // }
-
-    const authHeader = req.headers["authorization"] 
-
-    if(!authHeader || !authHeader.startsWith("Bearer ")) {
-        return response(res, 401, false, "Authorization token missing or malformed");
+    
+    if(token) {
+        return next(new Error("Authorization token missing or malformed"));
     }
-
-    const token = authHeader.split(" ")[1]
 
     try {
         if (!process.env.JWT_SECRET) {
@@ -24,7 +17,7 @@ const authMiddleware = (req, res, next) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        req.user = decoded;
+        socket.user = decoded;
 
         next();
 
@@ -42,4 +35,4 @@ const authMiddleware = (req, res, next) => {
     }
 }
 
-export default authMiddleware;
+export default socketMiddleware;

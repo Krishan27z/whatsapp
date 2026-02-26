@@ -4,6 +4,7 @@ import Message from "../models/Message.js"
 import Conversation from "../models/Conversation.js"
 import mongoose from "mongoose"
 import handleVideoCallEvent from "./videoCallEvents.js"
+import socketMiddleware from "../middlewares/socketMiddleware.js"
 
 
 // 🔴 REAL-TIME STATUS STORAGE
@@ -166,6 +167,11 @@ const initializeSocket = (server) => {
             console.error("❌ Error updating offline messages:", error)
         }
     }
+
+    //! Middleware for Socket Authentication
+    io.use(socketMiddleware)
+
+    
 
     io.on("connection", (socket) => {
         console.log("🔌 User connected", socket.id)

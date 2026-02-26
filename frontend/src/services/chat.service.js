@@ -11,6 +11,8 @@ let reconnectTimer = null
 let browserId = null
 let connectionPromise = null
 
+const token = localStorage.getItem("auth_token")
+
 // 🔴 BROWSER ID
 const getBrowserId = () => {
   if (!browserId) {
@@ -101,7 +103,8 @@ export const initializeSocket = () => {
 
       // 🔴 CRITICAL: Create socket instance
       const newSocket = io(BACKEND_URL, {
-        withCredentials: true,
+        auth: {token},
+        // withCredentials: true,
         transports: ["websocket", "polling"],
         reconnectionAttempts: MAX_RECONNECTION_ATTEMPTS,
         reconnectionDelay: 1000,

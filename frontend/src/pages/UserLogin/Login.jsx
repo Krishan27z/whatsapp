@@ -448,6 +448,8 @@ function Login() {
             //& <===== If backend confirms OTP verification success =======>
             if (response?.status === "success") {
                 toast.success("OTP is verified successfully")
+                const token = response.data?.token  //^ Get token from response (if sent by backend)
+                localStorage.setItem("auth_token", token)  //^ Save token to localStorage for future authenticated requests
                 console.log(response)  //^ <--- to see the logged-in user's details in console 
                 const user = response.data?.user
 
