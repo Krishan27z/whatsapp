@@ -190,6 +190,7 @@ const verifyOtp = async (req, res) => {
                 phoneNumber: user.phoneNumber,
                 isVerified: user.isVerified,
             },
+            token: token //^ ✅ Frontend will store this token in an HTTP-only cookie, so we can also send it in the response body for flexibility (e.g., if frontend wants to store it in localStorage instead). But remember, storing JWT in localStorage is less secure than HTTP-only cookies.
         })
     } catch (error) {
         console.error("Error verifying OTP:", error?.message || error)

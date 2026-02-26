@@ -1,44 +1,11 @@
-import nodemailer from "nodemailer"
-import dotenv from "dotenv"
-dotenv.config()
+import { Resend } from 'resend';
+import dotenv from 'dotenv';
+dotenv.config();
 
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-//* STEP-1: CREATE A TRANSPORTER TO CONNECT WITH YOUR EMAIL SERVICE
-/*
-    nodemailer.createTransport() → creates a transporter, which is like a “mail delivery vehicle.”
-    The transporter knows where (email service), who (your email), and how (password/auth) to send emails.
-    Once it’s configured, you can reuse it anywhere to send emails easily.
-*/
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465, 
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,  //& Your sender email address (stored securely in .env)
-    pass: process.env.EMAIL_PASS,  //& Your email password or app-specific password
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-})
-
-
-//* STEP-2: VERIFY THE CONNECTION CONFIGURATION
-//~ This ensures that the transporter is correctly configured and can connect to the Gmail service
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ Gmail Services Connection Failed:", error)
-  }
-  else {
-    console.log("✅ Gmail Services Connected Successfully")
-  }
-})
-
-
-//* STEP-3: FUNCTION TO SEND OTP EMAIL TO USER
 const sendOtpToEmail = async (email, otp) => {
   try {
-    //^ Define the email content using HTML for better presentation
     const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
@@ -113,26 +80,26 @@ const sendOtpToEmail = async (email, otp) => {
   </table>
 </body>
 </html>
-`
+`;
 
-    //^ Define the email options — who sends, who receives, and what content
-    const mailOptions = {
-      from: process.env.EMAIL_USER,             //& Sender's email address
-      to: email,                                //& Recipient's email address
-      subject: "Your WhatsApp Verification OTP Code",  //& Subject of the email
-      html: htmlContent,                        //& Email body (formatted HTML)
+    const { data, error } = await resend.emails.send({
+      from: 'WhatsApp Clone <onboarding@resend.dev>', // Resend free sandbox domain
+      to: [email],
+      subject: 'Your WhatsApp Verification OTP Code',
+      html: htmlContent,
+    });
+
+    if (error) {
+      console.error('❌ Resend Error:', error);
+      throw new Error(error.message);
     }
 
-    //^ Send the email using the configured transporter to the recipient email address 
-    const info = await transporter.sendMail(mailOptions)
-
-    console.log("✅ OTP Email Sent Successfully:", info.messageId) //& Logs the message ID for debugging or tracking
-    return info //& Returns the response object if needed
+    console.log('✅ OTP Email Sent via Resend:', data.id);
+    return data;
   } catch (error) {
-    console.error("❌ Error Sending OTP Email:", error.message) //& Logs any error that occurs while sending the email
-    throw new Error("Failed to send OTP email. Please try again.") //& Throws an error to be handled by the controller
+    console.error('❌ Error Sending OTP Email:', error.message);
+    throw new Error('Failed to send OTP email. Please try again.');
   }
-}
+};
 
-//* STEP-4: EXPORT THE FUNCTION FOR USE IN CONTROLLERS
-export { sendOtpToEmail }
+export { sendOtpToEmail };
