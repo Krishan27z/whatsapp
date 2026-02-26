@@ -239,13 +239,13 @@ function Login() {
         try {
             setLoading(true)
             let response
-            
+
             if (userPhoneData?.email) {
                 response = await sendOtp(null, null, userPhoneData.email)
             } else if (userPhoneData?.phoneNumber && userPhoneData?.phoneSuffix) {
                 response = await sendOtp(userPhoneData.phoneNumber, userPhoneData.phoneSuffix, null)
             }
-            
+
             if (response?.status === "success") {
                 toast.success("New OTP sent successfully")
                 // Reset timer
@@ -272,7 +272,7 @@ function Login() {
     // 🔴 TIMER EFFECT (NEWLY ADDED) - PERSISTENT
     useEffect(() => {
         let intervalId
-        
+
         if (step === 2 && isTimerActive && timer > 0) {
             intervalId = setInterval(() => {
                 setTimer(prev => {
@@ -291,7 +291,7 @@ function Login() {
                 })
             }, 1000)
         }
-        
+
         return () => {
             if (intervalId) {
                 clearInterval(intervalId)
@@ -305,13 +305,13 @@ function Login() {
         const savedTimerData = localStorage.getItem('otpTimerData');
         if (savedTimerData) {
             const { expiryTime, step: savedStep } = JSON.parse(savedTimerData);
-            
+
             if (savedStep === 2 && step === 2) {
                 const now = Date.now();
                 const remainingSeconds = Math.max(0, Math.floor((expiryTime - now) / 1000));
-                
+
                 setTimer(remainingSeconds);
-                
+
                 if (remainingSeconds > 0) {
                     setIsTimerActive(true);
                     setCanResend(false);
@@ -321,7 +321,7 @@ function Login() {
                 }
             }
         }
-        
+
         // Cleanup on component unmount
         return () => {
             // Don't clear here, we want it to persist
@@ -418,24 +418,24 @@ function Login() {
     const onOtpSubmit = async () => {
         try {
             setLoading(true)  //& Show spinner while OTP verification API is running
-            
+
             // 🔴 CHECK TIMER (NEWLY ADDED)
             if (timer <= 0) {
                 toast.error("OTP has expired. Please request a new one.")
                 return
             }
-            
+
             if (!userPhoneData) {   //&  Value in 'userPhoneData' comes from [6] LOGIN API call (Email / Phone based OTP) 
                 throw new Error("Phone or Email data is missing")
             }
-            
+
             // 🔴 VALIDATE OTP FORMAT (NEWLY ADDED)
             const otpString = otp.join("")  //& 'otp' comes from above in this file (useState hook)
             if (otpString.length !== 6) {
                 toast.error("Please enter a 6-digit OTP")
                 return
             }
-            
+
             let response
             //* ---- Case 1: OTP verification via Email ----
             if (userPhoneData?.email) {
@@ -471,7 +471,7 @@ function Login() {
             } else {
                 // 🔴 SHOW SPECIFIC ERROR FROM BACKEND (NEWLY ADDED)
                 const errorMessage = response?.message || "Invalid OTP"
-                
+
                 if (errorMessage.includes("Invalid") || errorMessage.includes("incorrect")) {
                     toast.error("Incorrect OTP. Please try again.")
                 } else if (errorMessage.includes("expired")) {
@@ -483,7 +483,7 @@ function Login() {
             }
         } catch (error) {
             console.error("Login OTP Error:", error)
-            
+
             // 🔴 HANDLE NETWORK ERRORS (NEWLY ADDED)
             if (error.response) {
                 const errorData = error.response.data
@@ -601,12 +601,16 @@ function Login() {
                 formData.append("profilePicture", selectedAvatar)
             }
             //& ------ Call Update Profile API ------
-            await updateUserProfile(formData)
-            toast.success("Welcome to the WhatsApp")
-            navigate('/')     //~ Redirect to home
-            resetLoginState() //~ Clear all login-related states
-            // 🔴 CLEAR TIMER FROM LOCALSTORAGE
-            clearTimerFromLocalStorage();
+            const response = await updateUserProfile(formData) //^ Call the API function to update user profile (defined in "user.service.js" file)
+
+            if (response?.status === "success") {
+                const updatedUser = response.data?.user
+                setUser(updatedUser)  //~ Save updated user to global store / state
+                toast.success("Welcome to the WhatsApp")
+                navigate('/')     //~ Redirect to home
+                resetLoginState() //~ Clear all login-related states
+                clearTimerFromLocalStorage(); //~ CLEAR TIMER FROM LOCALSTORAGE
+            }
         } catch (error) {
             console.error("Login OTP Error:", error);
             toast.error("Failed to update user profile");
@@ -772,9 +776,9 @@ function Login() {
                                     <button
                                         type='button' //&  <-- Prevents from submitting the form
                                         className={`flex-shrink-0 z-10 inline-flex items-center gap-1 px-2 py-2 sm:px-4 sm:py-2.5 text-sm font-medium text-center whitespace-nowrap 
-                                        ${theme === 'dark' 
-                                        ? "text-white bg-gray-700 border-gray-600 hover:bg-gray-600 focus:ring-gray-500" 
-                                        : "text-gray-900 bg-gray-100 border-gray-300 hover:bg-gray-200 focus:ring-gray-100"} 
+                                        ${theme === 'dark'
+                                                ? "text-white bg-gray-700 border-gray-600 hover:bg-gray-600 focus:ring-gray-500"
+                                                : "text-gray-900 bg-gray-100 border-gray-300 hover:bg-gray-200 focus:ring-gray-100"} 
                                         border rounded-s-lg focus:ring-4 focus:outline-none cursor-pointer`}
                                         onClick={() => setDropDown(!dropDown)}
                                     >
@@ -812,9 +816,9 @@ function Login() {
                                                         }
                                                     }}
                                                     className={`w-full px-2 py-1 border rounded-md text-base focus:outline-none focus:ring-2 focus: ring-green-500
-                                                    ${theme === 'dark' 
-                                                    ? "bg-gray-800 border-gray-500 text-white" 
-                                                    : "bg-white border-gray-300 text-gray-900 font-semibold"}`}
+                                                    ${theme === 'dark'
+                                                            ? "bg-gray-800 border-gray-500 text-white"
+                                                            : "bg-white border-gray-300 text-gray-900 font-semibold"}`}
                                                 />
                                             </div>
                                             {/*//^ ------- List of filtered countries ------- */}
@@ -896,8 +900,8 @@ function Login() {
 
                                 className={`w-full bg-transparent focus:outline-none border-none 
                                 ${theme === 'dark'
-                                    ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-300"
-                                    : "bg-white border-gray-300 text-gray-700 placeholder:text-gray-400 text-base"}
+                                        ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-300"
+                                        : "bg-white border-gray-300 text-gray-700 placeholder:text-gray-400 text-base"}
                                 ${loginErrors.email ? "border-red-500" : ""}`}
                             />
                             {/* //^ -------- Validation Error Message (ONLY email errors) -------- */}
@@ -964,7 +968,7 @@ function Login() {
                                 {otpErrors.otp.message}
                             </p>
                         )}
-                        
+
                         {/*//^ Submit button to verify OTP */}
                         <button type="submit"
                             className={`w-full text-white py-2 rounded-md transition font-semibold cursor-pointer
@@ -1057,8 +1061,8 @@ function Login() {
                                 placeholder='username'
                                 className={`w-full pl-10 border py-2 pr-3 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-lg
                                     ${theme === 'dark'
-                                            ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
-                                            : "bg-white border-gray-300 text-gray-700 placeholder:text-gray-500 text-[1rem]"}`}
+                                        ? "bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
+                                        : "bg-white border-gray-300 text-gray-700 placeholder:text-gray-500 text-[1rem]"}`}
                             />
                             {profileErrors.username && (
                                 <p className='text-red-500 text-sm mt-1'>

@@ -22,7 +22,7 @@ app.set("trust proxy", 1);
 
 // ================= CORS =================
 // Use a professional environment-variable whitelist
-const allowedOrigins = [process.env.FRONTEND_URL]
+const allowedOrigins = [process.env.FRONTEND_URL].filter(Boolean)
 
 app.use(
   cors({
@@ -30,11 +30,15 @@ app.use(
       // allow Postman / curl / server-to-server requests with no origin
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-
-      return callback(new Error(`CORS blocked for origin ${origin}`), false);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        console.warn(`CORS blocked for origin: ${origin}`);
+        return callback(new Error(`CORS blocked for origin ${origin}`), false);
+      }
     },
-    credentials: true,
+    credentials: true, //^ Allow cookies to be sent in CORS requests
+    optionsSuccessStatus: 200, //^ For legacy browser support
   })
 );
 

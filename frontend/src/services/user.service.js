@@ -66,7 +66,9 @@ export const updateUserProfile = async (updateData) => {
         //& The real request URL becomes: http://localhost:8000/api/auth/update-profile
         //& Request payload: updateData (object containing the fields to update)
         //^ "axiosInstance" got from "url.service.js" file
-        const response = await axiosInstance.put('/auth/update-profile', updateData)
+        const response = await axiosInstance.put('/auth/update-profile', updateData, {
+            headers: { "Content-Type": "multipart/form-data" } //? If updateData includes files, set content type to multipart/form-data
+        })
 
         //& Backend receives this request in 'authController.js' file → updateProfile(req, res)
         //^ Backend flow (from authController.js):
