@@ -10,13 +10,17 @@ const useUserStore = create(
         (set) =>({
             user: null,              //? Stores the currently logged-in user's data (null if no user)
             isAuthenticated: false,  //? Tracks if user is logged in or not
+            socketConnected: false,   //? 🔥 NEW: Tracks socket connection status
 
             //? setUser: saves user data and marks user as authenticated
             //? Example: setUser({ name: "John", phone: "12345" })
             setUser: (userData) => set({ user: userData, isAuthenticated: true }),
 
             //? `clearUser`: removes user data and marks user as not-authenticated/ logged out
-            clearUser: () => set({user: null, isAuthenticated: false})
+            clearUser: () => set({user: null, isAuthenticated: false}),
+
+            //? 🔥 NEW: Set socket connection status
+            setSocketConnected: (status) => set({ socketConnected: status })
         }),
         {
             name: "user-storage", //& Name of the storage key used in localStorage

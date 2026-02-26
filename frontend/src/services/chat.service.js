@@ -28,7 +28,7 @@ const startHeartbeat = () => {
 
   heartbeatInterval = setInterval(() => {
     if (socket?.connected) {
-      const userId = useUserStore.getState()._id
+      const userId = useUserStore.getState().user?._id
       socket.emit("heartbeat", {
         timestamp: Date.now(),
         userId: userId,
@@ -73,7 +73,7 @@ export const initializeSocket = () => {
       }
 
       const user = useUserStore.getState()
-      let userId = user?._id || user?.id || user?.user?._id
+      let userId = user?._id || user?.id || user?.user?._id || user?.user?.id
 
       if (!userId) {
         const userData = localStorage.getItem('user');
@@ -114,7 +114,7 @@ export const initializeSocket = () => {
           browserId: browserId
         },
         auth: {
-          token: localStorage.getItem('token')
+          token: localStorage.getItem('auth_token')
         },
         pingTimeout: 60000,
         pingInterval: 25000,
@@ -215,7 +215,7 @@ export const initializeSocket = () => {
         console.log("🔄 Socket Reconnected after", attemptNumber, "attempts")
 
         // 🔴 RE-EMIT USER CONNECTED
-        const currentUserId = useUserStore.getState()._id || userId
+        const currentUserId = useUserStore.getState().user?._id || userId
         setTimeout(() => {
           console.log("📡 Re-emitting user_connected after reconnect:", currentUserId)
           newSocket.emit("user_connected", {
@@ -234,15 +234,18 @@ export const initializeSocket = () => {
         startHeartbeat()
       })
 
+      //! ------- [1.3] RECONNECTION ATTEMPTS --------
       newSocket.on("reconnect_attempt", (attemptNumber) => {
         console.log("🔄 Socket Reconnection Attempt:", attemptNumber)
         connectionAttempts = attemptNumber
       })
 
+      //! ------- [1.4] RECONNECTION ERRORS --------
       newSocket.on("reconnect_error", (error) => {
         console.log("❌ Socket Reconnection Error:", error.message)
       })
 
+      //! ------- [1.5] RECONNECTION FAILED --------
       newSocket.on("reconnect_failed", () => {
         console.log("❌ Socket Reconnection Failed")
         if (useUserStore.getState().setSocketConnected) {
@@ -382,7 +385,7 @@ export const disconnectSocket = () => {
       }
 
       socket.emit("user_logout", {
-        userId: useUserStore.getState()._id,
+        userId: useUserStore.getState().user?._id,
         timestamp: Date.now()
       })
 
@@ -452,7 +455,7 @@ export const emitSocketEvent = async (event, data) => {
 // 🔴 SPECIFIC EVENT EMITTERS - using emitSocketEvent
 export const emitTypingStart = async (conversationId, receiverId) => {
   try {
-    const currentUser = useUserStore.getState()
+    const currentUser = useUserStore.getState().user
     if (currentUser?._id && conversationId && receiverId) {
       return await emitSocketEvent("typing_start", {
         conversationId,
@@ -469,7 +472,7 @@ export const emitTypingStart = async (conversationId, receiverId) => {
 
 export const emitTypingStop = async (conversationId, receiverId) => {
   try {
-    const currentUser = useUserStore.getState()
+    const currentUser = useUserStore.getState().user
     if (currentUser?._id && conversationId && receiverId) {
       return await emitSocketEvent("typing_stop", {
         conversationId,
@@ -486,7 +489,7 @@ export const emitTypingStop = async (conversationId, receiverId) => {
 
 export const emitMessageRead = async (messageIds, senderId, conversationId) => {
   try {
-    const currentUser = useUserStore.getState()
+    const currentUser = useUserStore.getState().user
     if (currentUser?._id) {
       console.log("📤 Emitting message_read:", { messageIds, senderId, conversationId })
       return await emitSocketEvent("message_read", {
@@ -550,7 +553,7 @@ export const leaveConversationRoom = async (conversationId) => {
 // 🔴 CHAT WINDOW MANAGEMENT
 export const emitEnterChatWindow = async (conversationId) => {
   try {
-    const currentUser = useUserStore.getState()
+    const currentUser = useUserStore.getState().user
     const currentSocket = await waitForSocketConnection()
 
     if (currentSocket?.connected && conversationId && currentUser?._id) {
@@ -570,7 +573,7 @@ export const emitEnterChatWindow = async (conversationId) => {
 
 export const emitLeaveChatWindow = async (conversationId) => {
   try {
-    const currentUser = useUserStore.getState()
+    const currentUser = useUserStore.getState().user
     const currentSocket = await waitForSocketConnection()
 
     if (currentSocket?.connected && conversationId && currentUser?._id) {
@@ -591,7 +594,7 @@ export const emitLeaveChatWindow = async (conversationId) => {
 // 🔴 MESSAGE DELETION
 export const emitMessageDeleted = async (messageId, conversationId, deleteForEveryone) => {
     try {
-        const currentUser = useUserStore.getState()
+        const currentUser = useUserStore.getState().user
         const currentSocket = await waitForSocketConnection()
 
         if (currentSocket?.connected) {
@@ -629,7 +632,7 @@ export const emitGetOnlineUsers = async (callback) => {
 // 🔴 CHECK CHAT WINDOW
 export const emitCheckChatWindow = async (conversationId, callback) => {
   try {
-    const currentUser = useUserStore.getState()
+    const currentUser = useUserStore.getState().user
     const currentSocket = await waitForSocketConnection()
 
     if (currentSocket?.connected && conversationId && currentUser?._id) {

@@ -101,13 +101,13 @@ export const checkUserAuth = async () => {
         //& This endpoint is protected by authMiddleware, which reads the JWT token from the cookie (auth_token) or Authorization header and attaches req.user.userId
         //^ "axiosInstance" got from "url.service.js" file
         const response = await axiosInstance.get('/auth/check-auth')
-        if(response.data.status === 'success'){
+        if (response.data.status === 'success') {
             return {    //& If User is authenticated, return object with user info
                 isAuthenticated: true,
                 user: response?.data?.data
             }
         }
-        else if(response.data.status === 'error'){
+        else if (response.data.status === 'error') {
             return { isAuthenticated: false }
         }
     } catch (error) {
@@ -128,6 +128,11 @@ export const logOutUser = async () => {
         //& The frontend receives this response to confirm the user is logged out.
         //^ "axiosInstance" got from "url.service.js" file
         const response = await axiosInstance.get('/auth/logout')
+
+        //^ When the user logs out, we also want to clear any user-related data from localStorage to prevent stale data issues. This includes the auth token and any cached user info.
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('user-storage');
+        localStorage.removeItem('login-storage');
         return response.data
     } catch (error) {
         throw error.response ? error.response.data : error.message
