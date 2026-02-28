@@ -308,19 +308,26 @@ function StatusPreview({ contact, currentIndex, onClose, onNext, onPrev, theme, 
       return <p className={`text-center py-6 ${secondaryTextClass}`}>No viewers yet</p>;
     }
 
+    //! Sort viewers by viewedAt timestamp (newest first)
+    const sortedViewers = [...viewers].sort((a, b) => {
+      const dateA = new Date(a.viewedAt || a.user?.viewedAt || 0);
+      const dateB = new Date(b.viewedAt || b.user?.viewedAt || 0);
+      return dateB - dateA; //& descending (newest first)
+    })
+
     return (
       <div className="space-y-3">
-        {viewers.map((entry) => {
-          // 🛡️ Safety: handle both object and string formats
+        {sortedViewers.map((entry) => {
+          //& Safety: handle both object and string formats
           let user, viewedAt;
 
           if (typeof entry === 'object' && entry !== null) {
             if (entry.user) {
-              // New format: { user: {...}, viewedAt }
+              //& New format: { user: {...}, viewedAt }
               user = entry.user;
               viewedAt = entry.viewedAt;
             } else if (entry._id) {
-              // Old format: just user object
+              //& Old format: just user object
               user = entry;
               viewedAt = entry.viewedAt || new Date().toISOString();
             } else {
@@ -328,7 +335,7 @@ function StatusPreview({ contact, currentIndex, onClose, onNext, onPrev, theme, 
               return null;
             }
           } else if (typeof entry === 'string') {
-            // 🚨 Fallback: just a user ID
+            //&  Fallback: just a user ID
             user = {
               _id: entry,
               username: 'User',
@@ -341,7 +348,7 @@ function StatusPreview({ contact, currentIndex, onClose, onNext, onPrev, theme, 
 
           if (!user || !user._id) return null;
 
-          // Check if this user liked
+          //& Check if this user liked
           const viewerLiked = reactions.some(r => {
             const rId = r.user?._id?.toString() || r.user?.toString();
             return rId === user._id.toString();
@@ -384,6 +391,8 @@ function StatusPreview({ contact, currentIndex, onClose, onNext, onPrev, theme, 
       </div>
     );
   }
+
+
 
   //! ========== JSX RENDER ==========
   return (

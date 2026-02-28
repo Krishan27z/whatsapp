@@ -205,15 +205,15 @@ function ChatWindow({ selectedContact, setSelectedContact }) {
 
   // Handle conversation change
   // 🎯 MODIFIED: FETCH MESSAGES ON CONVERSATION CHANGE & ONLINE SYNC
-useEffect(() => {
+  useEffect(() => {
     if (!selectedContact) {
-        setMessage("")
-        return
+      setMessage("")
+      return
     }
 
     // 🔴 RE-SYNC WHEN BACK ONLINE
     const handleOnline = () => {
-        if (currentConversationId) fetchMessages(currentConversationId);
+      if (currentConversationId) fetchMessages(currentConversationId);
     };
     window.addEventListener('online', handleOnline);
 
@@ -224,28 +224,28 @@ useEffect(() => {
     setOpenMenu(null);
 
     if (currentConversationId) {
-        // 🔥 WHATSAPP STYLE: Check if we already have messages in store
-        const hasExistingMessages = messages[currentConversationId]?.length > 0;
+      // 🔥 WHATSAPP STYLE: Check if we already have messages in store
+      const hasExistingMessages = messages[currentConversationId]?.length > 0;
 
-        // If we DON'T have messages, show the spinner
-        if (!hasExistingMessages) {
-            setIsLoadingMessages(true);
-        }
+      // If we DON'T have messages, show the spinner
+      if (!hasExistingMessages) {
+        setIsLoadingMessages(true);
+      }
 
-        // ALWAYS fetch in background to sync latest messages, 
-        // but it won't block the UI if messages already exist.
-        fetchMessages(currentConversationId).finally(() => {
-            setIsLoadingMessages(false);
-        });
+      // ALWAYS fetch in background to sync latest messages, 
+      // but it won't block the UI if messages already exist.
+      fetchMessages(currentConversationId).finally(() => {
+        setIsLoadingMessages(false);
+      });
     }
 
     // Auto-focus input
     setTimeout(() => inputRef.current?.focus(), 100);
 
     return () => {
-        window.removeEventListener('online', handleOnline);
+      window.removeEventListener('online', handleOnline);
     };
-}, [selectedContact, currentConversationId, fetchMessages]);
+  }, [selectedContact, currentConversationId, fetchMessages]);
 
 
 
@@ -1533,20 +1533,11 @@ useEffect(() => {
             whileTap={{ scale: isUploading || isSending ? 1 : 0.95 }}
             onClick={handleSendMessage}
             className={`w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-full shadow-lg transition-all cursor-pointer 
-                ${isUploading
-                ? 'bg-gradient-to-r from-gray-700 to-gray-800 cursor-wait'
-                : isSending
-                  ? 'bg-gradient-to-r from-gray-400 to-gray-500'
-                  : 'bg-gradient-to-r from-green-500 to-cyan-500 hover:from-green-600 hover:to-cyan-600'
-              }`}
+      bg-gradient-to-r from-green-500 to-cyan-500
+      ${(isUploading || isSending) ? 'opacity-75 cursor-not-allowed' : 'hover:from-green-600 hover:to-cyan-600'}`}
             disabled={isUploading || isSending || (!message.trim() && !selectedFile)}
           >
-            {isUploading ? (
-              <div className="relative w-4 h-4 sm:w-5 sm:h-5">
-                <div className="absolute inset-0 border-2 border-transparent border-t-green-400 border-r-cyan-400 rounded-full animate-spin"></div>
-                <div className="absolute inset-1 border-2 border-transparent border-b-blue-400 border-l-purple-400 rounded-full animate-spin-reverse"></div>
-              </div>
-            ) : isSending && selectedFile ? (
+            {isUploading || isSending ? (
               <FaSpinner className="h-4 w-4 text-white animate-spin" />
             ) : (
               <FaPaperPlane className="h-4 w-4 sm:h-5 sm:w-5 text-white rotate-45" />

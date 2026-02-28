@@ -1,12 +1,81 @@
 import React from 'react'
 import formatTimestamp from '../../utils/formatTime'
 import useStatusStore from '../../stores/useStatusStore'
-import { useShallow } from 'zustand/react/shallow'
 
 function StatusList({ contact, onPreview, theme, user }) {
-    // 1. Directly store theke map ta ano
     const statusViewersMap = useStatusStore(state => state.statusViewersMap);
     const myId = user?._id?.toString();
+
+    //^ Find the last status of the contact
+    const lastStatus = contact.statuses?.length > 0 
+        ? contact.statuses[contact.statuses.length - 1] 
+        : null;
+
+    //^ Check if the last status has been viewed by the current user
+    const isLastStatusViewed = lastStatus ? 
+        (statusViewersMap.get(lastStatus._id?.toString()) || lastStatus.viewers || [])
+            .some(v => {
+                const viewerId = v?.user?._id?.toString() || v?.user?.toString() || v?.toString();
+                return viewerId === myId;
+            })
+        : false;
+
+    //& blur class (Tailwind)
+    const blurClass = !isLastStatusViewed && lastStatus ? 'blur-[2px]' : '';
+
+    //^ Function to render the content inside the avatar circle based on the last status
+    const renderAvatarContent = () => {
+        if (!lastStatus) {
+            //& If no status, show profile picture or avatar
+            return (
+                <img
+                    src={contact?.profilePicture || contact?.avatar}
+                    alt={contact?.username}
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                        e.target.src = `https://ui-avatars.com/api/?name=${contact?.username || 'User'}&background=random`;
+                    }}
+                />
+            );
+        }
+
+        //^ If there's a status, show the media or caption based on content type
+        if (lastStatus.contentType === 'image') {
+            return (
+                <img
+                    src={lastStatus.media}
+                    alt="status"
+                    className={`h-full w-full object-cover ${blurClass}`}
+                />
+            );
+        }
+        if (lastStatus.contentType === 'video') {
+            return (
+                <div className="relative h-full w-full">
+                    <video
+                        src={lastStatus.media}
+                        className={`h-full w-full object-cover ${blurClass}`}
+                        muted
+                    />
+                    {blurClass && (
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <div className="w-4 h-4 bg-white rounded-full"></div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+        //& text status
+        return (
+            <div
+                className={`h-full w-full text-[10px] bg-green-100 flex items-center justify-center font-bold text-center p-1 
+                    ${blurClass} ${theme === 'dark' ? "text-white" : "text-gray-700"}`}
+                style={{ wordBreak: 'break-word' }}
+            >
+                {lastStatus.caption || lastStatus.media || 'Text'}
+            </div>
+        );
+    };
 
     return (
         <div
@@ -15,34 +84,26 @@ function StatusList({ contact, onPreview, theme, user }) {
             onClick={onPreview}
         >
             <div className='relative'>
-                <img
-                    src={contact?.profilePicture || contact?.avatar}
-                    alt={contact?.username}
-                    className='h-14 w-14 rounded-full object-cover p-[3px]'
-                    onError={(e) => {
-                        e.target.src = `https://ui-avatars.com/api/?name=${contact?.username || 'User'}&background=random`;
-                    }}
-                />
+                {/*//& Show the content of status inside the circle */}
+                <div className="h-14 w-14 rounded-full overflow-hidden">
+                    {renderAvatarContent()}
+                </div>
 
-                <svg className='absolute top-0 left-0 w-14 h-14 rotate-90' viewBox='0 0 100 100'>
-                    {contact.statuses.map((status, index) => {
+                {/*//&  RING  */}
+                <svg className='absolute -top-[2px] -left-[2px] w-[60px] h-[60px] rotate-90' viewBox='0 0 100 100'>
+                    {contact.statuses?.map((status, index) => {
                         const count = contact.statuses.length;
                         const radius = 48;
                         const circumference = 2 * Math.PI * radius;
                         const segmentLength = circumference / count;
-                        const gap = count > 1 ? 8 : 0;
+                        const gap = count > 1 ? 9 : 0;
 
-                        // 🔥 REAL FIX: 
-                        // dashArray te bolte hobe kotota stroke hobe, ar kotota gap hobe.
-                        // Visible hobe (segmentLength - gap), ar baki Pura circle ta INVISIBLE thakbe.
                         const visibleLength = Math.max(0, segmentLength - gap);
                         const invisibleLength = circumference - visibleLength;
                         const dashArray = `${visibleLength} ${invisibleLength}`;
 
-                        // Offset thik ache
                         const offset = index * segmentLength;
 
-                        // Tor DB check ekdom perfect chilo agei
                         const sId = status._id?.toString();
                         const viewers = statusViewersMap.get(sId) || status.viewers || [];
                         const hasViewed = viewers.some(v => {
@@ -57,12 +118,11 @@ function StatusList({ contact, onPreview, theme, user }) {
                                 cy='50'
                                 r={radius}
                                 fill='none'
-                                // Dekhle Gray, Na dekhle Green
                                 stroke={hasViewed ? '#94a3b8' : '#22c55e'}
                                 strokeWidth='4'
                                 strokeDasharray={dashArray}
                                 strokeDashoffset={-offset}
-                                strokeLinecap="round" // Optional: edge gulo sundor korar jonno
+                                strokeLinecap="round"
                             />
                         );
                     })}
@@ -74,11 +134,11 @@ function StatusList({ contact, onPreview, theme, user }) {
                     {contact?.username || contact?.name}
                 </p>
                 <p className={`text-sm ${theme === 'dark' ? "text-gray-400" : "text-gray-500"}`}>
-                    {contact.statuses.length > 0 && formatTimestamp(contact.statuses[contact.statuses.length - 1].timeStamp)}
+                    {lastStatus && formatTimestamp(lastStatus.timeStamp)}
                 </p>
             </div>
         </div>
     );
 }
 
-export default StatusList;
+export default StatusList

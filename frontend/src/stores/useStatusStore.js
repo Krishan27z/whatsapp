@@ -157,6 +157,7 @@ const useStatusStore = create((set, get) => ({
                 const statusId = data.statusId;
                 const userId = data.userId;
 
+                //^ Update reactions for the status
                 const oldReactions = state.statusReactionsMap.get(statusId) || [];
                 let newReactions;
                 if (data.action === "add") {
@@ -170,35 +171,22 @@ const useStatusStore = create((set, get) => ({
                     newReactions = oldReactions.filter(r => r.user?._id !== userId && r.user !== userId);
                 }
 
-                const newReactionsMap = new Map(state.statusReactionsMap);
-                newReactionsMap.set(statusId, newReactions);
-
+                //& ✅ Viewers update - only update reaction type for the viewer, do not add/remove viewer here
                 const oldViewers = state.statusViewersMap.get(statusId) || [];
                 let newViewers;
-
                 if (data.action === "add") {
-                    const viewerExists = oldViewers.some(v => v._id === userId);
-                    if (viewerExists) {
-                        newViewers = oldViewers.map(v =>
-                            v._id === userId ? { ...v, reaction: data.type } : v
-                        );
-                    } else {
-                        newViewers = [
-                            ...oldViewers,
-                            {
-                                _id: userId,
-                                username: data.viewer?.username || 'Unknown',
-                                profilePicture: data.viewer?.profilePicture || null,
-                                viewedAt: new Date(),
-                                reaction: data.type,
-                            }
-                        ];
-                    }
+                    newViewers = oldViewers.map(v =>
+                        v._id === userId ? { ...v, reaction: data.type } : v
+                    );
+                    //& ❌ If viewer not in list, we do NOT add them here. They will be added when "status_viewed" event is received.
                 } else {
                     newViewers = oldViewers.map(v =>
                         v._id === userId ? { ...v, reaction: null } : v
                     );
                 }
+
+                const newReactionsMap = new Map(state.statusReactionsMap);
+                newReactionsMap.set(statusId, newReactions);
 
                 const newViewersMap = new Map(state.statusViewersMap);
                 newViewersMap.set(statusId, newViewers);
@@ -214,7 +202,7 @@ const useStatusStore = create((set, get) => ({
                     statusUpdateCounter: state.statusUpdateCounter + 1,
                 };
             });
-        });
+        })
 
         socket.on("status_reaction_global", ({ statusId, reactionCount }) => {
             set((state) => ({
