@@ -121,7 +121,7 @@ const handleVideoCallEvent = (socket, io, userConnections) => {
      * 
      * This offer is sent to receiver using socket
      */
-    socket.on("webrtc_offer", ({ offer, receiverId, callId }) => {
+    socket.on("webrtc_offer", ({ offer, receiverId, callId, senderId  }) => {
 
         const receiverSockets = userConnections.get(receiverId)
         const receiverSocketId = receiverSockets
@@ -130,8 +130,8 @@ const handleVideoCallEvent = (socket, io, userConnections) => {
 
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("webrtc_offer", {
-                offer,                 // SDP offer
-                senderId: socket.userId,
+                offer,       // SDP offer
+                senderId,   // ← use client-provided senderId
                 callId
             })
             console.log(`server: offer sent to ${receiverId}`)
@@ -149,7 +149,7 @@ const handleVideoCallEvent = (socket, io, userConnections) => {
      * Receiver replies with ANSWER after accepting OFFER
      * This completes basic connection setup
      */
-    socket.on("webrtc_answer", ({ answer, receiverId, callId }) => {
+    socket.on("webrtc_answer", ({ answer, receiverId, callId, senderId  }) => {
 
         const receiverSockets = userConnections.get(receiverId)
         const receiverSocketId = receiverSockets
@@ -159,7 +159,7 @@ const handleVideoCallEvent = (socket, io, userConnections) => {
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("webrtc_answer", {
                 answer,                // SDP answer
-                senderId: socket.userId,
+                senderId,  // ← use client-provided senderId
                 callId
             })
             console.log(`server: answer sent to ${receiverId}`)
@@ -186,7 +186,7 @@ const handleVideoCallEvent = (socket, io, userConnections) => {
      * 
      * Server only FORWARDS these candidates.
      */
-    socket.on("webrtc_ice_candidate", ({ candidate, receiverId, callId }) => {
+    socket.on("webrtc_ice_candidate", ({ candidate, receiverId, callId, senderId  }) => {
 
         const receiverSockets = userConnections.get(receiverId)
         const receiverSocketId = receiverSockets
@@ -196,7 +196,7 @@ const handleVideoCallEvent = (socket, io, userConnections) => {
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("webrtc_ice_candidate", {
                 candidate,             // network route info
-                senderId: socket.userId,
+                senderId,  // ← use client-provided senderId
                 callId
             })
         } else {
