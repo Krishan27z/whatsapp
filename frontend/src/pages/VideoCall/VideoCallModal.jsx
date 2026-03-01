@@ -81,7 +81,17 @@ function VideoCallModal({ socket }) {
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
       { urls: 'stun:stun2.l.google.com:19302' },
-    ],
+      {
+        urls: 'turn:openrelay.metered.ca:80',
+        username: 'openrelayproject',
+        credential: 'openrelayproject'
+      },
+      {
+        urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+        username: 'openrelayproject',
+        credential: 'openrelayproject'
+      }
+    ]
   }
 
   //&  Memorize display the user info
@@ -196,7 +206,8 @@ function VideoCallModal({ socket }) {
           socketRef.current.emit("webrtc_ice_candidate", {
             candidate: event.candidate,
             receiverId: participantId,
-            callId: callId
+            callId: callId,
+            senderId: userRef.current?._id   // ← explicit senderId
           })
         }
       }
@@ -254,7 +265,8 @@ function VideoCallModal({ socket }) {
       socketRef.current.emit("webrtc_offer", {
         offer,
         receiverId: currentCallVal.participantId,
-        callId: currentCallVal.callId
+        callId: currentCallVal.callId,
+        senderId: userRef.current?._id   // ← explicit senderId
       })
     } catch (error) {
       setCallStatus("failed")
@@ -313,7 +325,7 @@ function VideoCallModal({ socket }) {
       setCallStatus("connecting");
 
       // 🚫 DO NOT call checkPermissions() here – it breaks mobile activation
-      const stream = await initializeMedia(callType === 'video');  // সরাসরি কল
+      const stream = await initializeMedia(callType === 'video');  // Direct call to initializeMedia with correct video flag
       const pc = createPeerConnection(stream, "RECEIVER");
 
       if (queuedOfferRef.current) {
@@ -323,7 +335,8 @@ function VideoCallModal({ socket }) {
         socketRef.current.emit("webrtc_answer", {
           answer,
           receiverId: queuedOfferRef.current.senderId,
-          callId: queuedOfferRef.current.callId
+          callId: queuedOfferRef.current.callId,
+          senderId: userRef.current?._id   // ← explicit senderId
         });
         queuedOfferRef.current = null;
       }
