@@ -694,12 +694,12 @@ function MessageBubble({ message, theme, currentUser, onReact, deleteMessage }) 
 
           {/*//^  Options Dropdown - UPDATED: Sender message right side, Receiver message left side */}
           {showOptions && (
-            <div className={`absolute ${isCurrentUser ? 'right-0' : '-left-20'} top-full mt-1 shadow-lg rounded-lg py-1 z-50 min-w-[175px]
+            <div className={`absolute ${isCurrentUser ? 'right-0' : '-left-20'} top-full mt-1 shadow-lg rounded-lg py-1 z-50 min-w-[195px]
               ${theme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"}`}>
 
               {/* Copy Button */}
               <button
-                className="px-4 py-2 text-sm text-gray-700 w-full text-left flex items-center cursor-pointer
+                className="px-4 py-2 text-base text-gray-700 w-full text-left flex items-center cursor-pointer
                   dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 onClick={handleCopyMessage}
               >
@@ -709,7 +709,7 @@ function MessageBubble({ message, theme, currentUser, onReact, deleteMessage }) 
               {/* View Media Button */}
               {(message.contentType === 'image' || message.contentType === 'video') && message.imageOrVideoUrl && (
                 <button
-                  className="px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 
+                  className="px-4 py-2 text-base text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 
                     w-full text-left flex items-center cursor-pointer"
                   onClick={handleViewMedia}
                 >
@@ -719,7 +719,7 @@ function MessageBubble({ message, theme, currentUser, onReact, deleteMessage }) 
 
               {/* Delete Button */}
               <button
-                className="px-4 py-2 text-sm text-red-600 hover:bg-gray-100
+                className="px-4 py-2 text-base text-red-600 hover:bg-gray-100
                    dark:hover:bg-gray-700 w-full text-left flex items-center cursor-pointer"
                 onClick={handleDelete}
               >

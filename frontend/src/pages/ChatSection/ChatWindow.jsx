@@ -1058,7 +1058,7 @@ useEffect(() => {
           </div>
 
           {/*//* [3] Contact Info  */}
-          <div className='ml-3 flex-grow'>
+          <div className='ml-2 sm:ml-3 flex-grow'>
             <motion.h2
               key={`name-${forceUpdateCounter}`}
               className='font-semibold text-start truncate max-w-[150px] sm:max-w-none break-all'
@@ -1070,7 +1070,7 @@ useEffect(() => {
             </motion.h2>
 
             {/*//^ 🔴 REAL-TIME STATUS LINE */}
-            <div className="h-5 flex items-center min-w-[180px]">
+            <div className="h-5 flex items-center min-w-[185px]">
               <motion.p
                 className={`text-xs sm:text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"
                   } truncate max-w-[150px] sm:max-w-none break-all `}
@@ -1106,7 +1106,7 @@ useEffect(() => {
             <button
               onClick={handleVideoCall}   //& 'handleVideoCall' is defined at the above
               title={isOnline ? "Start Video Calling" : "User is offline"}
-              className={` group relative flex items-center justify-center h-10 w-10 rounded-full
+              className={` group relative flex items-center justify-center h-10 w-10 rounded-full -right-1.5
                 transition-all duration-300 ease-out hover:scale-110 focus:outline-none cursor-pointer
                 ${theme === 'dark' ? 'hover:bg-green-400/20' : 'hover:bg-green-500/5'}
               `}
@@ -1121,7 +1121,7 @@ useEffect(() => {
               />
 
               <FaVideo
-                className={` relative h-5 w-5 transition-colors duration-300
+                className={` relative h-5.5 w-5.5 transition-colors duration-300
                   ${theme === 'dark' ? 'text-green-600 group-hover:text-green-400' : 'text-green-500 group-hover:text-green-600'}
                 `}
               />
