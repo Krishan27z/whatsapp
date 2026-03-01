@@ -678,7 +678,7 @@ function Status() {
                     {openMenu === "emoji" && (
                       <motion.div
                         ref={emojiPickerRef}
-                        className="absolute -top-10 sm:top-1 right:0 sm:right-10  w-[270px] sm:w-[320px] h-[350px] sm:h-[380px] z-50
+                        className="absolute -top-10 sm:top-1 right:0 sm:right-10 w-[280px] h-[360px] sm:w-[310px] sm:h-[350px] z-50
                           rounded-2xl bg-gradient-to-br from-white/95 to-gray-100/95 backdrop-blur-xl shadow-2xl"
                         initial={{ opacity: 0, y: 12, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}

@@ -17,7 +17,7 @@ function MessageBubble({ message, theme, currentUser, onReact, deleteMessage }) 
   const [videoError, setVideoError] = useState(false)
   const [imageError, setImageError] = useState(false)
   const [pickerPosition, setPickerPosition] = useState({ top: 0, left: 0 })
-  const [pickerDirection, setPickerDirection] = useState('upward') // 'upward' or 'downward'
+  const [pickerDirection, setPickerDirection] = useState('upward') //^ 'upward' or 'downward'
   const [isMobile, setIsMobile] = useState(false)
   const [mediaLoaded, setMediaLoaded] = useState(false)
 
@@ -751,7 +751,7 @@ function MessageBubble({ message, theme, currentUser, onReact, deleteMessage }) 
                 }`}
             >
               <FaSmile
-                className={theme === 'dark' ? "text-gray-300" : "text-gray-600"}
+                className={`${theme === 'dark' ? "text-gray-200" : "text-gray-600"} w-5 h-5`}
               />
             </button>
 
@@ -796,8 +796,8 @@ function MessageBubble({ message, theme, currentUser, onReact, deleteMessage }) 
                     onClick={() => handleReact(emoji)}
                     className={`hover:scale-110 active:scale-105 transition-transform duration-150
                       ${isMobile
-                        ? 'p-1 text-[15px] w-7 h-7'  // Mobile: fixed size
-                        : 'p-1.5 text-[16px] w-8 h-8' // Desktop: fixed size
+                        ? 'p-2 text-[17px] w-7 h-7'  // Mobile: fixed size
+                        : 'p-3 text-[18px] w-8 h-8' // Desktop: fixed size
                       }
                       flex-shrink-0 rounded-full hover:bg-white/10 flex items-center justify-center
                     `}
@@ -825,7 +825,7 @@ function MessageBubble({ message, theme, currentUser, onReact, deleteMessage }) 
                     setOpenMenu("emoji")
                   }}
                 >
-                  <FaPlus className={`${isMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'} text-gray-300`} />
+                  <FaPlus className={`${isMobile ? 'h-3.5 w-3.5' : 'h-4 w-4'} text-gray-300`} />
                 </button>
               </div>
             )}
@@ -848,7 +848,7 @@ function MessageBubble({ message, theme, currentUser, onReact, deleteMessage }) 
               {/*//& Emoji Picker */}
               <motion.div
                 ref={emojiPickerRef}
-                className={`fixed z-50 w-[260px] h-[280px] sm:w-[300px] sm:h-[310px] rounded-2xl bg-gradient-to-br from-white/95 to-gray-100/95 backdrop-blur-2xl 
+                className={`fixed z-50 w-[280px] h-[330px] sm:w-[310px] sm:h-[340px] rounded-2xl bg-gradient-to-br from-white/95 to-gray-100/95 backdrop-blur-2xl 
                   shadow-[0_20px_60px_rgba(0,0,0,0.3)] border border-gray-200/50 overflow-hidden
                   
                   //~ [1] Desktop positioning based on sender/receiver
@@ -907,7 +907,7 @@ function MessageBubble({ message, theme, currentUser, onReact, deleteMessage }) 
         {/*//^ 🔴 Show Reaction below Message-Bubble */}
         {message.reactions && message.reactions.length > 0 && (
           <div
-            className={`absolute -bottom-5 flex items-center rounded-full shadow-md px-2 py-1 
+            className={`absolute -bottom-5 flex items-center rounded-full shadow-md p-1 
               ${isCurrentUser ? "-right-0.5" : "-left-0.5"}
               ${theme === "dark" ? "bg-[#2a3942]" : "bg-gray-100"}`}
           >

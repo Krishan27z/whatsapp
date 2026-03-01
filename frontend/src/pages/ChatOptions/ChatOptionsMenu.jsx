@@ -38,7 +38,8 @@ const ChatOptionsMenu = ({ theme, onClearChat, onWallpaperChange}) => {
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`group relative flex items-center justify-center h-10 w-10 rounded-full transition-all duration-300 ease-out hover:scale-110 focus:outline-none cursor-pointer
+          className={`group relative flex items-center justify-center h-10 w-10 rounded-full transition-all 
+            duration-300 ease-out hover:scale-110 focus:outline-none cursor-pointer -right-2
             ${theme === 'dark' ? 'hover:bg-green-400/20' : 'hover:bg-green-50'}`}
         >
           <span className={`absolute inset-0 rounded-full blur-md transition duration-300

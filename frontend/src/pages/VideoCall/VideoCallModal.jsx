@@ -131,15 +131,56 @@ function VideoCallModal({ socket }) {
   //& Initialize Media Stream with better error handling
   const initializeMedia = async (video = true) => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: video ? { width: 640, height: 480 } : false,
-        audio: true
-      })
-      setLocalStream(stream)
-      return stream
+      // Step 1: Use minimal constraints first – mobile friendly
+      const constraints = {
+        audio: true,
+        video: video ? { facingMode: "user" } : false // just user-facing camera, no hardcoded resolution
+      };
+
+      // Step 2: Try to get the stream
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      setLocalStream(stream);
+      return stream;
     } catch (error) {
-      console.log("Media Error", error.name, error.message)
-      throw new Error('Failed to access camera/microphone.')
+      console.error("❌ Media Error:", error.name, error.message);
+
+      // Step 3: If video failed but we wanted video, try audio-only as fallback
+      if (video && error.name !== 'NotAllowedError' && error.name !== 'PermissionDeniedError') {
+        console.log("🎤 Video failed, trying audio-only...");
+        try {
+          const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          setLocalStream(audioStream);
+          // Update callType to audio in store so UI adjusts
+          setCallType('audio');
+          return audioStream;
+        } catch (audioError) {
+          console.error("❌ Audio-only also failed:", audioError);
+        }
+      }
+
+      // Step 4: Human readable error messages
+      let message = 'Failed to access camera/microphone.';
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        message = 'Camera/Microphone access denied. Please allow permissions in browser settings.';
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        message = 'No camera or microphone found on this device.';
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        message = 'Camera or microphone is already in use by another app.';
+      } else if (error.name === 'OverconstrainedError') {
+        message = 'Camera cannot satisfy the requested constraints. Trying without specific resolution...';
+        // Fallback: try with simplest constraints
+        try {
+          const fallbackStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+          setLocalStream(fallbackStream);
+          return fallbackStream;
+        } catch (fallbackError) {
+          message = 'Still failed. Please check permissions.';
+        }
+      } else if (error.message.includes('Requested device not found')) {
+        message = 'No camera/microphone detected.';
+      }
+
+      throw new Error(message);
     }
   }
 
@@ -222,6 +263,7 @@ function VideoCallModal({ socket }) {
     }
   }, [])
 
+
   //& WebRTC Offer Handler
   const handleWebRTCOffer = async ({ offer, senderId, callId }) => {
     const pc = peerConnectionRef.current;
@@ -257,18 +299,21 @@ function VideoCallModal({ socket }) {
     const pc = peerConnectionRef.current
     if (pc && pc.signalingState !== 'closed') {
       if (pc.remoteDescription) {
-        try { await pc.addIceCandidate(new RTCIceCandidate(candidate)) } catch (e) {}
+        try { await pc.addIceCandidate(new RTCIceCandidate(candidate)) } catch (e) { }
       } else {
         addIceCandidate(candidate)
       }
     }
   }
 
+
   //& Receiver: Answer Call
   const handleAnswerCall = async () => {
     try {
-      setCallStatus("connecting")
-      const stream = await initializeMedia(callType === 'video')
+      setCallStatus("connecting");
+
+      // 🚫 DO NOT call checkPermissions() here – it breaks mobile activation
+      const stream = await initializeMedia(callType === 'video');  // সরাসরি কল
       const pc = createPeerConnection(stream, "RECEIVER");
 
       if (queuedOfferRef.current) {
@@ -287,20 +332,20 @@ function VideoCallModal({ socket }) {
         callerId: incomingCall?.callerId,
         callId: incomingCall?.callId,
         receiverInfo: { username: user?.username, profilePicture: user?.profilePicture }
-      })
+      });
 
       setCurrentCall({
         callId: incomingCall?.callId,
         participantId: incomingCall?.callerId,
         participantName: incomingCall?.callerName,
         participantAvatar: incomingCall?.callerAvatar
-      })
-      clearIncomingCall()
+      });
+      clearIncomingCall();
     } catch (error) {
-      setCallError(error.message || "Failed to answer call")
-      setTimeout(() => endCall(), 2000)
+      setCallError(error.message || "Failed to answer call");
+      setTimeout(() => endCall(), 2000);
     }
-  }
+  };
 
   //& Receiver: Reject Call
   const handleRejectCall = useCallback(() => {
@@ -325,7 +370,7 @@ function VideoCallModal({ socket }) {
       console.log("🚀 Emitting end_call to:", pId);
       socketRef.current.emit("end_call", { callId: cId, participantId: pId });
     }
-    
+
     endCall();
     isEndingRef.current = false;
   }, [endCall])
